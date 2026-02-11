@@ -4,40 +4,47 @@ package main
 //Escreva um código em Go utilizando todo o conhecimento adquirido até o momento!
 // E nesse código você precisará, baseado em nossas aulas de concorrência,
 //utilizar canais e goroutines para que o seu programa exiba, em alternância, as palavras "ping" e "pong".
-import "fmt"
-import "time"
-
-func Ping(c chan string) {//palavra reservada para criar um Canal : chan
-	for i :=0;;i++{
-		c <- "ping"//usado para enviar e receber mensagen para o Canal		
-	}
-
-}
-
-func Pong(c chan string) {//palavra reservada para criar um Canal : chan
-	for i :=0;;i++{
-		c <- "pong"//usado para enviar e receber mensagen para o Canal		
-	}
-
-}
-
-func Imprimir(c chan string) {
-		for{
-			msg := <-c
-			fmt.Println(msg)
-			time.Sleep(time.Second * 1)
-		}
-}
+import (
+	"fmt"
+	"time"
+)
 
 func main() {
-	var c chan string = make(chan string) //cria um Canal do tipo string
+	pingCh := make(chan struct{})
+	pongCh := make(chan struct{})
+	msg := make(chan string)
 
-	go Ping(c)
-	go Imprimir(c)
-	go Pong(c)
-	go Imprimir(c)
+	go Ping(pingCh, pongCh, msg)
+	go Pong(pongCh, pingCh, msg)
+	go Imprimir(msg)
+
+	// inicia com ping
+	pingCh <- struct{}{}
 
 	var entrada string
 	fmt.Scanln(&entrada)
+}
 
+func Ping(pingCh, pongCh chan struct{}, msg chan string) {
+	for {
+		<-pingCh
+		msg <- "ping"
+		pongCh <- struct{}{}
+	}
+}
+
+func Pong(pongCh, pingCh chan struct{}, msg chan string) {
+	for {
+		<-pongCh
+		msg <- "pong"
+		pingCh <- struct{}{}
+	}
+}
+
+func Imprimir(msg chan string) {
+	for {
+		m := <-msg
+		fmt.Println(m)
+		time.Sleep(time.Second * 1)
+	}
 }

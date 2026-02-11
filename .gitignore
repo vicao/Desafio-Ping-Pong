@@ -1,0 +1,17 @@
+# Binários
+*.exe
+*.out
+
+# Vendor / módulos
+vendor/
+go.sum
+*.mod
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+*.log
+
+# Binário do projeto
+pingpong.exe
